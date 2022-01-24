@@ -1,0 +1,1 @@
+from bifrost.libbifrost_generated import struct_BFarray_
