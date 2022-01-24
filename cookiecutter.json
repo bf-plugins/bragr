@@ -3,5 +3,10 @@
     "plugin_version": "0.0.1",
     "plugin_author": "Danny Price",
     "plugin_description": "A simple example plugin for bifrost",
-    "bifrost_source_path": "/group/director2183/dancpr/src/bifrost/src/"
+    "bifrost_source_path": "/group/director2183/dancpr/src/bifrost/src/",
+    "_copy_without_render": [
+        "*.tpl",
+        "{{cookiecutter.plugin_name}}/generate_wrapper.py",
+        "{{cookiecutter.plugin_name}}/setup_env.sh"
+    ]
 }
