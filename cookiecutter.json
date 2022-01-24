@@ -1,7 +1,7 @@
 {
-    "project_name": "xcorr_lite",
-    "project_version": "0.0.1",
-    "project_author": "Danny Price",
-    "project_description": "A simple example plugin for bifrost",
+    "plugin_name": "xcorr_lite",
+    "plugin_version": "0.0.1",
+    "plugin_author": "Danny Price",
+    "plugin_description": "A simple example plugin for bifrost",
     "bifrost_source_path": "/group/director2183/dancpr/src/bifrost/src/"
 }
