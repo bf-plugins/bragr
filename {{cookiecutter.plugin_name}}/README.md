@@ -7,7 +7,7 @@
 To build your plugin:
 
 0) Setup your build environment (on topaz, run `source setup_env.sh`).
-1) Add your source code to `src/`. Names must be `{{cookiecutter.project_name}}.h` and `{{cookiecutter.project_name}}.cu`.
+1) Add your source code to `src/`. Names must be `{{cookiecutter.project_name}}.h` and `{{cookiecutter.plugin_name}}.cu`.
 2) compile with meson by running:
 
 ```
