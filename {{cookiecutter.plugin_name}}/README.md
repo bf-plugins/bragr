@@ -1,6 +1,6 @@
-## {{cookiecutter.project_name}}
+## {{cookiecutter.plugin_name}}
 
-{{cookiecutter.project_description}}
+{{cookiecutter.plugin_name}}
 
 ### Compiling your plugin
 
@@ -19,6 +19,6 @@ meson compile
 ### Using your plugin
 
 ```python
-from build import {{cookiecutter.project_name}}_generated as _bf
+from build import {{cookiecutter.plugin_name}}_generated as _bf
 _bf.ExampleFunction(data_in.as_BFarray(), data_out.as_BFarray())
 ```
