@@ -2,14 +2,14 @@
 
 A plugin template for the bifrost stream processing framework. 
 
+
 ### Compiling your plugin
 
 To build your plugin:
 
 0) Setup your build environment (on topaz, run `source setup_env.sh`).
-1) edit `meson.build`, replace project name and plugin name. Update with include paths.
-2) add your source code to `src/`. Names must be `{plugin}.h` and `{plugin}.cu`.
-3) compile with meson by running:
+1) add your source code to `src/`. Names must be `{plugin}.h` and `{plugin}.cu`.
+2) compile with meson by running:
 
 ```
 meson setup build

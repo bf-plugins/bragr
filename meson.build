@@ -1,7 +1,7 @@
 # Bifrost wrapper file
-project('xcorr_lite', 'cpp', 'cuda', version: '1.0.0',
+project('{{cookiecutter.project_name}}', 'cpp', 'cuda', version: '1.0.0',
          default_options : ['cpp_std=c++11'])
-plugin_name = 'xcorr_lite'
+plugin_name = '{{cookiecutter.project_name}}'
 cc = meson.get_compiler('cpp')
 
 # CUDA setup
