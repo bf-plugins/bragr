@@ -1,7 +1,7 @@
 # Bifrost wrapper file
-project('{{cookiecutter.plugin_name}}', 'cpp', 'cuda', version: '{{cookiecutter.plugin_version}}',
+project('{{cookiecutter.__snake_name}}', 'cpp', 'cuda', version: '{{cookiecutter.plugin_version}}',
          default_options : ['cpp_std=c++11'])
-plugin_name = '{{cookiecutter.plugin_name}}'
+plugin_name = '{{cookiecutter.__snake_name}}'
 cc = meson.get_compiler('cpp')
 
 # CUDA setup
@@ -25,7 +25,11 @@ bf_include = include_directories(
 
 # Generate python wrapper from .h file
 builddir = meson.project_build_root()
+message('Generating ctypes wrapper from {{cookiecutter.__snake_name}}.h')
 r = run_command('./generate_wrapper.py', 'src' / plugin_name, '-o', builddir, check: true)
+message(r.stdout().strip())
+r = run_command('./wrap_bifrost_plugin.py', builddir / plugin_name+'_generated.py', 
+                '-o', builddir, check: true)
 message(r.stdout().strip())
 
 # Generate shared object from .cu file

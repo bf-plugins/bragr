@@ -7,6 +7,14 @@
     "_copy_without_render": [
         "*.tpl",
         "generate_wrapper.py",
-        "setup_env.sh"
-    ]
+        "setup_env.sh",
+        "wrap_bifrost_plugin.py"
+    ],
+    "_extensions": [
+        "jinja2_strcase.StrcaseExtension"
+    ],
+    "__camel_name": "{{ cookiecutter.plugin_name | to_camel }}",
+    "__snake_name": "{{ cookiecutter.plugin_name | to_snake }}",
+    "__short_name": "{{ cookiecutter.plugin_name | truncate(4) }}",
+    "__class_name": "bf_{{ cookiecutter.__short_name }}"
 }
