@@ -3,7 +3,8 @@
     "plugin_version": "0.0.1",
     "plugin_author": "Danny Price",
     "plugin_description": "A simple example plugin for bifrost",
-    "bifrost_source_path": "/group/director2183/dancpr/src/bifrost/src/",
+    "bifrost_source_path": "bifrost/src/",
+    "requires_cuda": "y",
     "_copy_without_render": [
         "*.tpl",
         "generate_wrapper.py",
@@ -15,6 +16,6 @@
     ],
     "__camel_name": "{{ cookiecutter.plugin_name | to_camel }}",
     "__snake_name": "{{ cookiecutter.plugin_name | to_snake }}",
-    "__short_name": "{{ cookiecutter.plugin_name | truncate(4) }}",
+    "__short_name": "{{ cookiecutter.plugin_name | truncate(6, True, '') }}",
     "__class_name": "bf_{{ cookiecutter.__short_name }}"
 }

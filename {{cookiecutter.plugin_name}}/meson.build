@@ -1,12 +1,25 @@
+{% if cookiecutter.requires_cuda == "y" %}
 # Bifrost wrapper file
 project('{{cookiecutter.__snake_name}}', 'cpp', 'cuda', version: '{{cookiecutter.plugin_version}}',
          default_options : ['cpp_std=c++11'])
+{% else %}
+# Bifrost wrapper file
+project('{{cookiecutter.__snake_name}}', 'cpp', version: '{{cookiecutter.plugin_version}}',
+         default_options : ['cpp_std=c++11'])
+{% endif %}
+
 plugin_name = '{{cookiecutter.__snake_name}}'
 cc = meson.get_compiler('cpp')
 
+{% if cookiecutter.requires_cuda == "y" %}
 # CUDA setup
 cuda = import('unstable-cuda')
 cuda_dep = dependency('cuda', version : '>=11', modules : ['cudart', 'nvrtc'])
+
+# CUDA flags
+#nvflags = cuda.nvcc_arch_flags('11.1', 'Volta')
+#message(cuda.min_driver_version('11.1'))
+{% endif %}
 
 # Dependency: bifrost
 bf_dep = dependency('bifrost')
@@ -17,11 +30,6 @@ bf_include = include_directories(
     bifrost_src_path / 'bifrost', 
     bifrost_src_path / 'cuda'
     )
-
-
-# CUDA flags
-#nvflags = cuda.nvcc_arch_flags('11.1', 'Volta')
-#message(cuda.min_driver_version('11.1'))
 
 # Generate python wrapper from .h file
 builddir = meson.project_build_root()

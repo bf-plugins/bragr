@@ -1,7 +1,6 @@
 #include <bifrost/array.h>
 #include <bifrost/common.h>
 #include <bifrost/ring.h>
-#include "cuda.hpp"
 #include <utils.hpp>
 #include <stdlib.h>
 #include <stdio.h>
@@ -21,9 +20,11 @@ private:
     cudaStream_t _stream;
     
 public:
-    {{cookiecutter.__class_name}}() : _stream(g_cuda_stream) {}
+    {{cookiecutter.__class_name}}() {
+        
+    }
     ~{{cookiecutter.__class_name}}() {
-        cudaDeviceSynchronize();
+
     }
     
     inline int n_param1() const { return _n_param1; }
@@ -36,12 +37,6 @@ public:
         this->reset_state();
     }
 
-    // Needed to set CUDA stream for asynchronous launching
-    void set_stream(cudaStream_t stream) {
-        cudaDeviceSynchronize();
-        _stream = stream;
-    }
-
     // Do any zeroing / memset stuff here
     void reset_state() {
         
@@ -50,8 +45,6 @@ public:
     // execute your plugin
     void exec(BFarray const* in, BFarray* out) {
         
-        // Check for errors
-        BF_CHECK_CUDA_EXCEPTION(cudaGetLastError(), BF_STATUS_INTERNAL_ERROR);  
         }
 };
 
@@ -68,12 +61,6 @@ BFstatus {{cookiecutter.__camel_name}}Init(bfplugin plan, int n_param1) {
     BF_TRY_RETURN(plan->init(n_param1));
 }
 
-// Assign to CUDA stream
-BFstatus {{cookiecutter.__camel_name}}SetStream(bfplugin plan, void const* stream) {
-        BF_ASSERT(plan, BF_STATUS_INVALID_HANDLE);
-        BF_ASSERT(stream, BF_STATUS_INVALID_POINTER);
-        BF_TRY_RETURN(plan->set_stream(*(cudaStream_t*)stream));
-}
 
 // Reset state of any internal memory 
 BFstatus {{cookiecutter.__camel_name}}ResetState(bfplugin plan) {
@@ -88,11 +75,6 @@ BFstatus {{cookiecutter.__camel_name}}Execute(bfplugin plan,
     BF_ASSERT(plan, BF_STATUS_INVALID_POINTER);
     BF_ASSERT(in,   BF_STATUS_INVALID_POINTER);
   	BF_ASSERT(out,  BF_STATUS_INVALID_POINTER);
-    
-    BF_ASSERT(space_accessible_from(in->space, BF_SPACE_CUDA),
-              BF_STATUS_UNSUPPORTED_SPACE);
-    BF_ASSERT(space_accessible_from(out->space, BF_SPACE_CUDA),
-              BF_STATUS_UNSUPPORTED_SPACE);
     
     BF_TRY_RETURN(plan->exec(in, out));
 }
