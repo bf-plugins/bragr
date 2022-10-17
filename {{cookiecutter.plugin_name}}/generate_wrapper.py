@@ -11,6 +11,14 @@ import subprocess
 import crayons
 import shutil
 
+def get_pyver():
+    # Get python version string e.g. 39
+    import platform as pf
+    pmaj, pmin, pminmin = pf.python_version().split('.')
+    pyver = f'{pmaj}{pmin}'
+    return pyver
+PYVER = get_pyver()
+
 ctypes_tpl = 'ctypesgen src/{{bn}}.h -obuild/{{bn}}.json -lbifrost -l{{build_path}}/{{libname}}.so -I. -I{{bf_src_path}} --no-embed-preamble --output-language=json'
 
 hdr_tpl= '''
@@ -19,14 +27,20 @@ hdr_tpl= '''
 Python wrapper generated with bragr (bifrost)
 """
 
+import os
 from ctypesgen.libraryloader import load_library, add_library_search_dirs 
 from ctypesgen.printer_python.preamble import *
 from bifrost.libbifrost_generated import BFarray, BFstatus
 
-add_library_search_dirs("{{build_path}}")
+# Add current path to search dirs
+HERE = os.path.dirname(os.path.abspath(__file__))
+load_library.other_dirs.append(HERE)
+print(load_library.other_dirs)
+
+python_extension_so_name = f'{{plugname}}.cpython-{{PYVER}}-x86_64-linux-gnu'
 
 _libs={}
-_libs["bf_dp4a"] = load_library("bf_dp4a")
+_libs["bf_dp4a"] = load_library(python_extension_so_name)
 '''
 
 func_tpl = '''
@@ -65,7 +79,6 @@ j2_func_tpl = Template(func_tpl)
 
 if __name__== "__main__":
 
-    
     header_files = ['xcorr_lite.h', 'beanfarmer.h']
     
     hdr={
@@ -73,7 +86,8 @@ if __name__== "__main__":
         'plugname': 'bf_dp4a',
         'bf_src_path': '/home/dancpr/software/bifrost/src',
         'bf_lib_path': '/home/dancpr/software/bifrost/lib',
-        'build_path': '/home/dancpr/software/bf_plugins/bf_dp4a/build'
+        'build_path': '/home/dancpr/software/bf_plugins/bf_dp4a/build',
+        'PYVER': PYVER
         }
     
     fn_out = 'build/'+hdr['libname'] + '_wrapper.py'
@@ -111,7 +125,5 @@ if __name__== "__main__":
                     fh.write(j2_func_tpl.render(func))
 
     # Copy to python package
-    #shutil.copy('build/ctypes_loader.py', hdr['plugname'])
-    #shutil.copy('build/ctypes_preamble.py', hdr['plugname'])
-    #hutil.copy(fn_out, hdr['build_path'])
+    shutil.copy(fn_out, 'pythonsrc')
     print(crayons.white(f"Wrapper written to {fn_out}", bold=True))
