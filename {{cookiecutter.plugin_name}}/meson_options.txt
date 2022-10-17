@@ -1,0 +1,2 @@
+# Option to generate python wrapper
+option('generate_wrapper', type : 'boolean', value : true)
