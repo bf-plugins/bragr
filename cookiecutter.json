@@ -1,15 +1,13 @@
 {
-    "plugin_name": "xcorr_lite",
+    "plugin_name": "bf_plugin",
     "plugin_version": "0.0.1",
-    "plugin_author": "Danny Price",
+    "plugin_author": "Bragi",
     "plugin_description": "A simple example plugin for bifrost",
     "bifrost_source_path": "bifrost/src/",
     "requires_cuda": "y",
     "_copy_without_render": [
-        "*.tpl",
         "generate_wrapper.py",
-        "setup_env.sh",
-        "wrap_bifrost_plugin.py"
+        "setup_env.sh"
     ],
     "_extensions": [
         "jinja2_strcase.StrcaseExtension"
