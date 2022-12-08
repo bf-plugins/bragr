@@ -7,6 +7,7 @@ Uses ctypesgen to generate a python wrapper.
 import simplejson as json
 from jinja2 import Template
 import os
+import sys
 import subprocess
 import crayons
 import shutil
@@ -20,7 +21,7 @@ def get_SOABI():
 SO_ABI_NAME = get_SOABI()
 
 ### COMMAND TO LAUNCH CTYPESGEN
-ctypes_tpl = 'ctypesgen src/{{bn}}.h -obuild/{{bn}}.json -lbifrost -l{{build_path}}/{{libname}}.so -I. -I{{bf_src_path}} --no-embed-preamble --output-language=json'
+ctypes_tpl = 'ctypesgen {{header_path}}/{{bn}}.h -obuild/{{bn}}.json -lbifrost -l{{build_path}}/{{libname}}.so -I. -I{{bf_src_path}} --no-embed-preamble --output-language=json'
 
 ### Template for ctypesgen wrapper
 hdr_tpl= '''
@@ -100,7 +101,7 @@ j2_typedef_tpl = Template(typedef_tpl)
 if __name__== "__main__":
     import argparse
     p = argparse.ArgumentParser(description='')
-    p.add_argument('header_files', nargs='*', help='List of header files (*.h) to wrap')
+    p.add_argument('src_files', nargs='*', help='List of header files (*.h) to wrap')
     p.add_argument('-s', '--src_path', dest='src_path', type=str, default='./',
                    help='Location of bifrost source (.../bifrost/src)')
     p.add_argument('-l', '--lib_path', dest='lib_path', type=str, default='./',
@@ -109,16 +110,18 @@ if __name__== "__main__":
                    help='Location of meson build directory')
     p.add_argument('-n', '--plugname', dest='plugname', type=str, default='bf_plugin',
                    help='Name of plugin (e.g. bf_boxcar)')
+    p.add_argument('-H', '--header_path', dest='header_path', type=str, default='include')
     args = p.parse_args()
     
     # Form dict to be used inside jinja templates
-    header_files = args.header_files
+    src_files = args.src_files
     hdr = {
         'libname': f'lib{args.plugname}',
         'plugname': args.plugname,
         'bf_src_path': args.src_path,
         'bf_lib_path': args.lib_path,
         'build_path':  args.build_path,
+        'header_path': args.header_path,
         'SO_ABI_NAME': SO_ABI_NAME
         }
 
@@ -129,39 +132,48 @@ if __name__== "__main__":
         fh.write(j2_hdr_tpl.render(hdr))
 
     # Read .h headers and generate ctypesgen JSON
-    for header_file in header_files:
-        hdr['bn']= os.path.splitext(os.path.basename(header_file))[0]
-        ctypes_cmd = j2_ctypes_tpl.render(hdr)
+    for src_file in src_files:
+        hdr['bn'] = os.path.splitext(os.path.basename(src_file))[0]
+        header_filename = f"{hdr['header_path']}/{hdr['bn']}.h"
+        if not os.path.exists(header_filename):
+            if os.path.exists(header_filename + 'pp'):
+                print(crayons.yellow(f"Skipping .hpp file - {header_filename}."))
+            else:
+                print(crayons.yellow(f"Warning: {header_filename} does not exist."))
+        else:
+            print(crayons.green(f"Opening {header_filename}"))
+            
+            ctypes_cmd = j2_ctypes_tpl.render(hdr)
 
-        # Run ctypesgen
-        print(crayons.green(ctypes_cmd))
-        output = subprocess.run(ctypes_cmd.split(' '),  check=True, capture_output=True)
-        outmsg = output.stderr.decode('ascii')
+            # Run ctypesgen
+            print(crayons.green(ctypes_cmd))
+            output = subprocess.run(ctypes_cmd.split(' '),  check=True, capture_output=True)
+            outmsg = output.stderr.decode('ascii')
 
-        if "ERROR" in outmsg:
-            print(outmsg)
-            print(crayons.red("ctypesgen error detected, exiting...", bold=True))
-            exit()
-    
-        # load JSON from ctypesgen
-        fn_in = os.path.join('build', hdr['bn'] + '.json')
-        with open(fn_in) as fh:
-            d = json.load(fh)  
+            if "ERROR" in outmsg:
+                print(outmsg)
+                print(crayons.red("ctypesgen error detected, exiting...", bold=True))
+                sys.exit()
+        
+            # load JSON from ctypesgen
+            fn_in = os.path.join('build', hdr['bn'] + '.json')
+            with open(fn_in) as fh:
+                d = json.load(fh)  
 
-        # Generate Python wrapper for each function
-        for item in d:
-            name = item['name']
-            if item['type'] == 'function':
-                print(crayons.white(f"Wrapping {name}...", bold=True))
-                func = item
-                with open(fn_out, 'a') as fh:
-                    fh.write(j2_func_tpl.render(func))
-            if item['type'] == 'typedef':
-                typedef = item
-                if typedef['name'] not in ('BFbool', 'BFarray', 'BFstatus', 'BFspace', 'BFdtype', 'BFdarray'):
-                    print(crayons.white(f"Wrapping typedef {name}...", bold=True))
+            # Generate Python wrapper for each function
+            for item in d:
+                name = item['name']
+                if item['type'] == 'function':
+                    print(crayons.white(f"Wrapping {name}...", bold=True))
+                    func = item
                     with open(fn_out, 'a') as fh:
-                        fh.write(j2_typedef_tpl.render(typedef))
+                        fh.write(j2_func_tpl.render(func))
+                if item['type'] == 'typedef':
+                    typedef = item
+                    if typedef['name'] not in ('BFbool', 'BFarray', 'BFstatus', 'BFspace', 'BFdtype', 'BFdarray'):
+                        print(crayons.white(f"Wrapping typedef {name}...", bold=True))
+                        with open(fn_out, 'a') as fh:
+                            fh.write(j2_typedef_tpl.render(typedef))
 
     # Copy to python package
     shutil.copy(fn_out, 'pythonsrc')
